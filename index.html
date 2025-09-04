@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FirmaDocs - Portal Dokumentów</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Ładujemy bibliotekę Supabase z CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+
     <div id="app-container">
         <!-- === EKRAN LOGOWANIA I REJESTRACJI === -->
         <div id="auth-view">
@@ -51,7 +53,6 @@
             <!-- Widok Admina -->
             <div id="admin-dashboard" class="hidden">
                 <h2>Panel Administratora</h2>
-                <!-- Zarządzanie Klientami -->
                 <div class="admin-section">
                     <h3>Klienci</h3>
                     <form id="add-client-form">
@@ -61,11 +62,12 @@
                     </form>
                     <ul id="clients-list"></ul>
                 </div>
-                 <!-- Zarządzanie Plikami i Kodami (dynamicznie w JS) -->
                 <div id="client-details-section" class="admin-section hidden"></div>
             </div>
         </div>
     </div>
-    <script type="module" src="main.js"></script>
+    
+    <!-- Ładujemy nasz JEDEN plik z całą logiką aplikacji -->
+    <script src="app.js"></script>
 </body>
 </html>

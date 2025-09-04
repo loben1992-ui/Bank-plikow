@@ -1,28 +1,25 @@
 // =============================================================
-//  GŁÓWNY PLIK APLIKACJI "FIRMADOCS" - WERSJA POPRAWIONA
+//  GŁÓWNY PLIK APLIKACJI "FIRMADOCS" - WERSJA OSTATECZNA 2.0
 // =============================================================
 
-// KROK 1: Konfiguracja Połączenia z Supabase
 const SUPABASE_URL = 'https://ytbycwoxkqzerxyzfeku.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0Ynljd294a3F6ZXJ4eXpmZWt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5ODQzMzIsImV4cCI6MjA3MjU2MDMzMn0.CvFrr2HyZJWQyf0c6S-84SkhGY5voTrn0IaLWQwx6Dc';
 
-// Sprawdzenie, czy klucze zostały wstawione
 if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes('TWOJ')) {
-    alert("BŁĄD KRYTYCZNY: Proszę wstawić prawidłowy URL i Klucz Supabase w pliku app.js!");
+    alert("BŁĄD: Proszę wstawić prawidłowy URL i Klucz Supabase w pliku app.js!");
     throw new Error("Supabase URL and Key are required.");
 }
 
-// OSTATECZNA, POPRAWNA INICJALIZACJA:
-// Używamy globalnego obiektu `supabase` z biblioteki,
-// i przypisujemy go do nowej zmiennej `supabaseClient`, aby uniknąć konfliktu.
-const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+// OSTATECZNA POPRAWKA:
+// Tworzymy naszą stałą `supabase`, używając JEDNOZNACZNIE globalnego obiektu `window.supabase`.
+// To rozwiązuje problem konfliktu nazw raz na zawsze.
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
 // === GŁÓWNA LOGIKA APLIKACJI ===
 document.addEventListener('DOMContentLoaded', () => {
     
-    // Zmieniamy wszystkie wywołania `supabase` na `supabaseClient`
+    // W CAŁYM PONIŻSZYM KODZIE UŻYWAMY TERAZ ZMIENNEJ `supabase`
     
     const authView = document.getElementById('auth-view');
     const mainView = document.getElementById('main-view');
@@ -38,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function checkUserStatus() {
-        const { data: { session } } = await supabaseClient.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         if (session) {
             authView.classList.add('hidden');
             mainView.classList.remove('hidden');
@@ -50,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function initializeApp(user) {
-        const { data: profile } = await supabaseClient.from('profiles').select('*, clients(*)').eq('id', user.id).single();
+        const { data: profile } = await supabase.from('profiles').select('*, clients(*)').eq('id', user.id).single();
         if (!profile) {
             alert('Nie udało się załadować profilu użytkownika. Spróbuj ponownie.');
             return;
@@ -73,14 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadClientDashboard(folderPath) {
         const fileList = document.getElementById('file-list');
         fileList.innerHTML = '<li>Ładowanie plików...</li>';
-        const { data, error } = await supabaseClient.storage.from('client-documents').list(folderPath);
+        const { data, error } = await supabase.storage.from('client-documents').list(folderPath);
         if (error || !data || data.length === 0) {
             fileList.innerHTML = '<li>Brak plików do wyświetlenia.</li>';
             return;
         }
         fileList.innerHTML = '';
         for (const file of data) {
-            const { data: { publicUrl } } = supabaseClient.storage.from('client-documents').getPublicUrl(`${folderPath}/${file.name}`);
+            const { data: { publicUrl } } = supabase.storage.from('client-documents').getPublicUrl(`${folderPath}/${file.name}`);
             fileList.innerHTML += `<li><span>${file.name}</span> <a href="${publicUrl}" class="file-link" target="_blank" download>Pobierz</a></li>`;
         }
     }
@@ -88,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadAdminDashboard() {
         const clientsList = document.getElementById('clients-list');
         async function fetchAndRenderClients() {
-            const { data: clients } = await supabaseClient.from('clients').select('*').order('company_name');
+            const { data: clients } = await supabase.from('clients').select('*').order('company_name');
             clientsList.innerHTML = '';
             clients.forEach(client => {
                 const li = document.createElement('li');
@@ -102,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const name = document.getElementById('client-name').value;
             const nip = document.getElementById('client-nip').value;
-            await supabaseClient.from('clients').insert({ company_name: name, nip });
+            await supabase.from('clients').insert({ company_name: name, nip });
             e.target.reset();
             await fetchAndRenderClients();
         });
@@ -110,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target.matches('.delete-client-btn')) {
                 e.stopPropagation();
                 if(confirm('Czy na pewno usunąć tego klienta i wszystkie jego dane?')) {
-                    supabaseClient.from('clients').delete().eq('id', e.target.dataset.clientId).then(fetchAndRenderClients);
+                    supabase.from('clients').delete().eq('id', e.target.dataset.clientId).then(fetchAndRenderClients);
                 }
             } else if (e.target.closest('li')) {
                 renderClientDetails(e.target.closest('li').dataset.clientId);
@@ -121,8 +118,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function renderClientDetails(clientId) {
         const detailsSection = document.getElementById('client-details-section');
-        const { data: client } = await supabaseClient.from('clients').select('*').eq('id', clientId).single();
-        const { data: codes } = await supabaseClient.from('registration_codes').select('*').eq('client_id_to_assign', clientId);
+        const { data: client } = await supabase.from('clients').select('*').eq('id', clientId).single();
+        const { data: codes } = await supabase.from('registration_codes').select('*').eq('client_id_to_assign', clientId);
         
         detailsSection.innerHTML = `
             <h3>Szczegóły: ${client.company_name}</h3>
@@ -138,13 +135,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('generate-code-form').onsubmit = async (e) => {
             e.preventDefault();
             const newPrefix = Math.floor(1000 + Math.random() * 9000).toString();
-            await supabaseClient.from('registration_codes').insert({ prefix: newPrefix, client_id_to_assign: clientId });
+            await supabase.from('registration_codes').insert({ prefix: newPrefix, client_id_to_assign: clientId });
             renderClientDetails(clientId);
         };
 
         const adminFileList = document.getElementById('admin-file-list');
         async function fetchAndRenderFiles() {
-            const { data } = await supabaseClient.storage.from('client-documents').list(client.storage_folder_path);
+            const { data } = await supabase.storage.from('client-documents').list(client.storage_folder_path);
             adminFileList.innerHTML = data && data.length > 0 ? data.map(file => `<li><span>${file.name}</span><button class="action-button delete-btn delete-file-btn" data-file-path="${client.storage_folder_path}/${file.name}">Usuń</button></li>`).join('') : '<li>Brak plików.</li>';
         }
 
@@ -152,18 +149,18 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const files = document.getElementById('file-upload-input').files;
             for (const file of files) {
-                await supabaseClient.storage.from('client-documents').upload(`${client.storage_folder_path}/${file.name}`, file);
+                await supabase.storage.from('client-documents').upload(`${client.storage_folder_path}/${file.name}`, file);
             }
             fetchAndRenderFiles();
         };
 
         detailsSection.onclick = async (e) => {
             if (e.target.matches('.delete-code-btn')) {
-                await supabaseClient.from('registration_codes').delete().eq('id', e.target.dataset.codeId);
+                await supabase.from('registration_codes').delete().eq('id', e.target.dataset.codeId);
                 renderClientDetails(clientId);
             }
             if (e.target.matches('.delete-file-btn')) {
-                await supabaseClient.storage.from('client-documents').remove([e.target.dataset.filePath]);
+                await supabase.storage.from('client-documents').remove([e.target.dataset.filePath]);
                 fetchAndRenderFiles();
             }
         };
@@ -181,14 +178,14 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) showMessage(error.message, 'error');
         else checkUserStatus();
     });
 
     document.getElementById('register-form').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const { data, error } = await supabaseClient.functions.invoke('register-client', {
+        const { data, error } = await supabase.functions.invoke('register-client', {
             body: {
                 email: document.getElementById('register-email').value,
                 password: document.getElementById('register-password').value,
@@ -205,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('logout-button').addEventListener('click', async () => {
-        await supabaseClient.auth.signOut();
+        await supabase.auth.signOut();
         location.reload();
     });
 

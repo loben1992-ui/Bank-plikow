@@ -6,17 +6,23 @@
 const SUPABASE_URL = 'https://ytbycwoxkqzerxyzfeku.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0Ynljd294a3F6ZXJ4eXpmZWt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5ODQzMzIsImV4cCI6MjA3MjU2MDMzMn0.CvFrr2HyZJWQyf0c6S-84SkhGY5voTrn0IaLWQwx6Dc';
 
+// Sprawdzenie, czy klucze zostały wstawione
 if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes('TWOJ')) {
-    alert("BŁĄD: Proszę wstawić prawidłowy URL i Klucz Supabase w pliku app.js!");
+    alert("BŁĄD KRYTYCZNY: Proszę wstawić prawidłowy URL i Klucz Supabase w pliku app.js!");
     throw new Error("Supabase URL and Key are required.");
 }
 
-// POPRAWKA: Używamy globalnego obiektu `supabase` do stworzenia klienta,
-// ale przypisujemy go do nowej stałej `supabaseClient`, aby uniknąć konfliktu nazw.
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// OSTATECZNA, POPRAWNA INICJALIZACJA:
+// Używamy globalnego obiektu `supabase` z biblioteki,
+// i przypisujemy go do nowej zmiennej `supabaseClient`, aby uniknąć konfliktu.
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 
 // === GŁÓWNA LOGIKA APLIKACJI ===
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // Zmieniamy wszystkie wywołania `supabase` na `supabaseClient`
     
     const authView = document.getElementById('auth-view');
     const mainView = document.getElementById('main-view');

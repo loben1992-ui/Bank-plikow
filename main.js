@@ -5,8 +5,8 @@
 // Używamy globalnego obiektu `supabase` załadowanego w HTML
 const { createClient } = window.supabase;
 
-const supabaseUrl = 'TWOJ_ADRES_URL_TUTAJ';
-const supabaseKey = 'TWOJ_KLUCZ_ANON_TUTAJ';
+const supabaseUrl = 'https://cvghbxnxnhjjuzkebpey.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN2Z2hieG54bmhqanV6a2VicGV5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5NjM1MDksImV4cCI6MjA3MjUzOTUwOX0.8h1qWukprv_ozQiZRZO_3PyzGrVkZft6j47MIpbIJ0o';
 
 // Sprawdzenie, czy klucze nie są puste
 if (!supabaseUrl || !supabaseKey) {
@@ -191,3 +191,4 @@ document.getElementById('logout-button').addEventListener('click', async () => {
 // === INICJALIZACJA PRZY STARCIE ===
 main();
 ```
+

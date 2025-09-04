@@ -1,25 +1,28 @@
+
 // =============================================================
-//  GŁÓWNY PLIK APLIKACJI "FIRMADOCS" - WERSJA OSTATECZNA 2.0
+//  GŁÓWNY PLIK APLIKACJI "FIRMADOCS" - WERSJA Z MODUŁEM ES
 // =============================================================
+
+// KROK 1: Importujemy funkcję `createClient` bezpośrednio z modułu CDN.
+// To eliminuje wszystkie konflikty nazw i problemy z timingiem ładowania.
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 const SUPABASE_URL = 'https://ytbycwoxkqzerxyzfeku.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0Ynljd294a3F6ZXJ4eXpmZWt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5ODQzMzIsImV4cCI6MjA3MjU2MDMzMn0.CvFrr2HyZJWQyf0c6S-84SkhGY5voTrn0IaLWQwx6Dc';
 
+
 if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes('TWOJ')) {
-    alert("BŁĄD: Proszę wstawić prawidłowy URL i Klucz Supabase w pliku app.js!");
+    alert("BŁĄD KRYTYCZNY: Proszę wstawić prawidłowy URL i Klucz Supabase w pliku app.js!");
     throw new Error("Supabase URL and Key are required.");
 }
 
-// OSTATECZNA POPRAWKA:
-// Tworzymy naszą stałą `supabase`, używając JEDNOZNACZNIE globalnego obiektu `window.supabase`.
-// To rozwiązuje problem konfliktu nazw raz na zawsze.
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// KROK 2: Tworzymy naszego klienta używając zaimportowanej funkcji.
+// Nie ma tu żadnego konfliktu nazw.
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 
-// === GŁÓWNA LOGIKA APLIKACJI ===
+// === GŁÓWNA LOGIKA APLIKACJI (pozostaje bez zmian) ===
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // W CAŁYM PONIŻSZYM KODZIE UŻYWAMY TERAZ ZMIENNEJ `supabase`
     
     const authView = document.getElementById('auth-view');
     const mainView = document.getElementById('main-view');
@@ -208,3 +211,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkUserStatus();
 });
+

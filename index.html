@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FirmaDocs - Portal Dokumentów</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div id="app-container">
+        <!-- === EKRAN LOGOWANIA I REJESTRACJI === -->
+        <div id="auth-view">
+            <div id="login-form-container">
+                <h2>Logowanie</h2>
+                <form id="login-form">
+                    <input type="email" id="login-email" placeholder="Email" required>
+                    <input type="password" id="login-password" placeholder="Hasło" required>
+                    <button type="submit">Zaloguj</button>
+                </form>
+                <p>Nie masz konta? <a href="#" id="show-register-link">Zarejestruj się</a></p>
+            </div>
+            <div id="register-form-container" class="hidden">
+                <h2>Rejestracja</h2>
+                <form id="register-form">
+                    <input type="text" id="register-fullname" placeholder="Imię i Nazwisko" required>
+                    <input type="email" id="register-email" placeholder="Email" required>
+                    <input type="password" id="register-password" placeholder="Hasło (min. 6 znaków)" required>
+                    <input type="text" id="register-nip" placeholder="NIP firmy" required>
+                    <input type="text" id="register-prefix" placeholder="4-cyfrowy kod-prefix" required pattern="\d{4}">
+                    <button type="submit">Zarejestruj</button>
+                </form>
+                <p>Masz już konto? <a href="#" id="show-login-link">Zaloguj się</a></p>
+            </div>
+            <div id="message-area"></div>
+        </div>
+
+        <!-- === GŁÓWNA APLIKACJA (PO ZALOGOWANIU) === -->
+        <div id="main-view" class="hidden">
+            <header>
+                <h1 id="welcome-message">Witaj,</h1>
+                <button id="logout-button">Wyloguj</button>
+            </header>
+            
+            <!-- Widok Klienta -->
+            <div id="client-dashboard" class="hidden">
+                <h2>Twoje Dokumenty</h2>
+                <ul id="file-list"></ul>
+            </div>
+
+            <!-- Widok Admina -->
+            <div id="admin-dashboard" class="hidden">
+                <h2>Panel Administratora</h2>
+                <!-- Zarządzanie Klientami -->
+                <div class="admin-section">
+                    <h3>Klienci</h3>
+                    <form id="add-client-form">
+                        <input type="text" id="client-name" placeholder="Nazwa firmy" required>
+                        <input type="text" id="client-nip" placeholder="NIP firmy" required>
+                        <button type="submit">Dodaj Klienta</button>
+                    </form>
+                    <ul id="clients-list"></ul>
+                </div>
+                 <!-- Zarządzanie Plikami i Kodami (dynamicznie w JS) -->
+                <div id="client-details-section" class="admin-section hidden"></div>
+            </div>
+        </div>
+    </div>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

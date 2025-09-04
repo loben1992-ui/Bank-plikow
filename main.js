@@ -190,5 +190,6 @@ document.getElementById('logout-button').addEventListener('click', async () => {
 
 // === INICJALIZACJA PRZY STARCIE ===
 main();
-```
+
+
 

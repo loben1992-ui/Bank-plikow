@@ -1,0 +1,5 @@
+{
+  "name": "Supabase React Blueprint",
+  "description": "A comprehensive skeleton for a browser-based React application using Supabase for database, authentication, and real-time features. This blueprint demonstrates user authentication, CRUD operations on a 'notes' table, and real-time data synchronization.",
+  "requestFramePermissions": []
+}

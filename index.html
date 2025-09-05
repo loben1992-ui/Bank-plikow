@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FirmaDocs - Portal Dokumentów</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Krok 1: Ładujemy bibliotekę Supabase -->
+    <!-- Krok 1: Ładujemy bibliotekę Supabase. Czekamy, aż będzie gotowa. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
     <div id="app-container">
-        <!-- === EKRAN LOGOWANIA I REJESTRACJI === -->
+        <!-- Cała struktura HTML bez zmian -->
         <div id="auth-view">
             <div id="login-form-container">
                 <h2>Logowanie</h2>
@@ -36,19 +36,15 @@
             </div>
             <div id="message-area"></div>
         </div>
-
-        <!-- === GŁÓWNA APLIKACJA (PO ZALOGOWANIU) === -->
         <div id="main-view" class="hidden">
             <header>
                 <h1 id="welcome-message">Witaj,</h1>
                 <button id="logout-button">Wyloguj</button>
             </header>
-            
             <div id="client-dashboard" class="hidden">
                 <h2>Twoje Dokumenty</h2>
                 <ul id="file-list"></ul>
             </div>
-
             <div id="admin-dashboard" class="hidden">
                 <h2>Panel Administratora</h2>
                 <div class="admin-section">
@@ -65,30 +61,34 @@
         </div>
     </div>
     
-    <!-- Krok 2: Uruchamiamy CAŁY nasz kod JavaScript TUTAJ -->
+    <!-- Krok 2: Uruchamiamy CAŁY nasz kod JavaScript TUTAJ, wewnątrz tagu script -->
     <script>
-        // =============================================================
-        //  GŁÓWNY KOD APLIKACJI "FIRMADOCS"
-        // =============================================================
+        // Czekamy, aż cały dokument HTML będzie gotowy, na wszelki wypadek.
+        document.addEventListener('DOMContentLoaded', () => {
 
-        // Konfiguracja Połączenia z Supabase
+            // =============================================================
+            //  GŁÓWNY KOD APLIKACJI "FIRMADOCS"
+            // =============================================================
+
+          // Konfiguracja Połączenia z Supabase
         const SUPABASE_URL = 'https://ytbycwoxkqzerxyzfeku.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0Ynljd294a3F6ZXJ4eXpmZWt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5ODQzMzIsImV4cCI6MjA3MjU2MDMzMn0.CvFrr2HyZJWQyf0c6S-84SkhGY5voTrn0IaLWQwx6Dc';
 
 
-        if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes('TWOJ')) {
-            alert("BŁĄD KRYTYCZNY: Proszę wstawić prawidłowy URL i Klucz Supabase w pliku index.html!");
-            throw new Error("Supabase URL and Key are required.");
-        }
-        
-        // OSTATECZNA, POPRAWNA INICJALIZACJA:
-        // Używamy globalnego obiektu `supabase` z biblioteki załadowanej powyżej.
-        const { createClient } = supabase;
-        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // === GŁÓWNA LOGIKA APLIKACJI ===
-        // Czekamy, aż cały dokument HTML będzie gotowy
-        document.addEventListener('DOMContentLoaded', () => {
+            if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes('TWOJ')) {
+                alert("BŁĄD KRYTYCZNY: Proszę wstawić prawidłowy URL i Klucz Supabase w tagu <script> w pliku index.html!");
+                throw new Error("Supabase URL and Key are required.");
+            }
+            
+            // OSTATECZNA, POPRAWNA INICJALIZACJA:
+            // Używamy `supabase` z `window`, które na 100% już istnieje,
+            // i tworzymy klienta pod inną nazwą `supabaseClient`.
+            const { createClient } = window.supabase;
+            const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            // === GŁÓWNA LOGIKA APLIKACJI ===
+            
             const authView = document.getElementById('auth-view');
             const mainView = document.getElementById('main-view');
             const showLoginLink = document.getElementById('show-login-link');
@@ -260,6 +260,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
                 location.reload();
             });
 
+            // Uruchomienie aplikacji
             checkUserStatus();
         });
     </script>

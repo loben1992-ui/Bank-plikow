@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FirmaDocs - Portal Dokumentów</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Krok 1: Ładujemy bibliotekę Supabase. Czekamy, aż będzie gotowa. -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
     <div id="app-container">
-        <!-- Cała struktura HTML bez zmian -->
+        <!-- Struktura HTML bez zmian -->
         <div id="auth-view">
             <div id="login-form-container">
                 <h2>Logowanie</h2>
@@ -61,29 +60,24 @@
         </div>
     </div>
     
-    <!-- Krok 2: Uruchamiamy CAŁY nasz kod JavaScript TUTAJ, wewnątrz tagu script -->
     <script>
-        // Czekamy, aż cały dokument HTML będzie gotowy, na wszelki wypadek.
+        // Czekamy, aż cały dokument HTML będzie gotowy
         document.addEventListener('DOMContentLoaded', () => {
 
             // =============================================================
             //  GŁÓWNY KOD APLIKACJI "FIRMADOCS"
             // =============================================================
-
-          // Konfiguracja Połączenia z Supabase
+// Konfiguracja Połączenia z Supabase
         const SUPABASE_URL = 'https://ytbycwoxkqzerxyzfeku.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl0Ynljd294a3F6ZXJ4eXpmZWt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY5ODQzMzIsImV4cCI6MjA3MjU2MDMzMn0.CvFrr2HyZJWQyf0c6S-84SkhGY5voTrn0IaLWQwx6Dc';
 
 
 
             if (!SUPABASE_URL || !SUPABASE_KEY || SUPABASE_URL.includes('TWOJ')) {
-                alert("BŁĄD KRYTYCZNY: Proszę wstawić prawidłowy URL i Klucz Supabase w tagu <script> w pliku index.html!");
+                alert("BŁĄD KRYTYCZNY: Proszę wstawić prawidłowy URL i Klucz Supabase w pliku index.html!");
                 throw new Error("Supabase URL and Key are required.");
             }
             
-            // OSTATECZNA, POPRAWNA INICJALIZACJA:
-            // Używamy `supabase` z `window`, które na 100% już istnieje,
-            // i tworzymy klienta pod inną nazwą `supabaseClient`.
             const { createClient } = window.supabase;
             const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -91,17 +85,57 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
             
             const authView = document.getElementById('auth-view');
             const mainView = document.getElementById('main-view');
-            const showLoginLink = document.getElementById('show-login-link');
-            const showRegisterLink = document.getElementById('show-register-link');
-
-            showLoginLink.addEventListener('click', (e) => { e.preventDefault(); toggleAuthForms(true); });
-            showRegisterLink.addEventListener('click', (e) => { e.preventDefault(); toggleAuthForms(false); });
+            
+            function showMessage(text, type) {
+                const messageArea = document.getElementById('message-area');
+                messageArea.textContent = text;
+                messageArea.className = `message-${type}`;
+                setTimeout(() => { messageArea.textContent = ''; messageArea.className = ''; }, 5000);
+            }
+            
+            // --- Logika przełączania formularzy ---
+            document.getElementById('show-login-link').addEventListener('click', (e) => { e.preventDefault(); toggleAuthForms(true); });
+            document.getElementById('show-register-link').addEventListener('click', (e) => { e.preventDefault(); toggleAuthForms(false); });
 
             function toggleAuthForms(showLogin) {
                 document.getElementById('login-form-container').classList.toggle('hidden', !showLogin);
                 document.getElementById('register-form-container').classList.toggle('hidden', showLogin);
             }
+            
+            // --- Logika formularzy Auth ---
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) showMessage(error.message, 'error');
+                else checkUserStatus();
+            });
 
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const { data, error } = await supabaseClient.functions.invoke('register-client', {
+                    body: {
+                        email: document.getElementById('register-email').value,
+                        password: document.getElementById('register-password').value,
+                        fullName: document.getElementById('register-fullname').value,
+                        nip: document.getElementById('register-nip').value,
+                        prefix: document.getElementById('register-prefix').value,
+                    }
+                });
+                if (error || data.error) showMessage(error?.message || data.error, 'error');
+                else {
+                    showMessage('Rejestracja pomyślna! Sprawdź email, aby potwierdzić konto, a następnie zaloguj się.', 'success');
+                    toggleAuthForms(true);
+                }
+            });
+
+            document.getElementById('logout-button').addEventListener('click', async () => {
+                await supabaseClient.auth.signOut();
+                location.reload();
+            });
+
+            // --- Logika po zalogowaniu ---
             async function checkUserStatus() {
                 const { data: { session } } = await supabaseClient.auth.getSession();
                 if (session) {
@@ -135,6 +169,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
                 }
             }
 
+            // --- Logika Widoku Klienta ---
             async function loadClientDashboard(folderPath) {
                 const fileList = document.getElementById('file-list');
                 fileList.innerHTML = '<li>Ładowanie plików...</li>';
@@ -149,8 +184,20 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
                 }
             }
 
+            // --- Logika Widoku Admina ---
             async function loadAdminDashboard() {
                 const clientsList = document.getElementById('clients-list');
+                
+                // POPRAWIONA LOGIKA PODPIĘCIA FORMULARZA ADMINA
+                document.getElementById('add-client-form').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const name = document.getElementById('client-name').value;
+                    const nip = document.getElementById('client-nip').value;
+                    await supabaseClient.from('clients').insert({ company_name: name, nip });
+                    e.target.reset();
+                    await fetchAndRenderClients();
+                });
+
                 async function fetchAndRenderClients() {
                     const { data: clients } = await supabaseClient.from('clients').select('*').order('company_name');
                     clientsList.innerHTML = '';
@@ -162,14 +209,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
                         clientsList.appendChild(li);
                     });
                 }
-                document.getElementById('add-client-form').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const name = document.getElementById('client-name').value;
-                    const nip = document.getElementById('client-nip').value;
-                    await supabaseClient.from('clients').insert({ company_name: name, nip });
-                    e.target.reset();
-                    await fetchAndRenderClients();
-                });
+                
                 clientsList.addEventListener('click', (e) => {
                     if (e.target.matches('.delete-client-btn')) {
                         e.stopPropagation();
@@ -220,45 +260,6 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
                 };
                 await fetchAndRenderFiles();
             }
-            
-            function showMessage(text, type) {
-                const messageArea = document.getElementById('message-area');
-                messageArea.textContent = text;
-                messageArea.className = `message-${type}`;
-                setTimeout(() => messageArea.textContent = '', 5000);
-            }
-
-            document.getElementById('login-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                if (error) showMessage(error.message, 'error');
-                else checkUserStatus();
-            });
-
-            document.getElementById('register-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const { data, error } = await supabaseClient.functions.invoke('register-client', {
-                    body: {
-                        email: document.getElementById('register-email').value,
-                        password: document.getElementById('register-password').value,
-                        fullName: document.getElementById('register-fullname').value,
-                        nip: document.getElementById('register-nip').value,
-                        prefix: document.getElementById('register-prefix').value,
-                    }
-                });
-                if (error || data.error) showMessage(error?.message || data.error, 'error');
-                else {
-                    showMessage('Rejestracja pomyślna! Sprawdź email, aby potwierdzić konto, a następnie zaloguj się.', 'success');
-                    toggleAuthForms(true);
-                }
-            });
-
-            document.getElementById('logout-button').addEventListener('click', async () => {
-                await supabaseClient.auth.signOut();
-                location.reload();
-            });
 
             // Uruchomienie aplikacji
             checkUserStatus();

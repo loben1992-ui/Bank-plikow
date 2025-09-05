@@ -40,8 +40,10 @@ const NotesDashboard: React.FC<NotesDashboardProps> = ({ session }) => {
         'postgres_changes',
         { event: '*', schema: 'public', table: 'notes', filter: `user_id=eq.${session.user.id}` },
         (payload) => {
+          // This real-time logic will now work after enabling replication via SQL,
+          // but the manual fetches below provide a robust fallback.
           if (payload.eventType === 'INSERT') {
-            setNotes(currentNotes => [payload.new, ...currentNotes]);
+            setNotes(currentNotes => [payload.new, ...currentNotes.filter(n => n.id !== payload.new.id)]);
           } else if (payload.eventType === 'UPDATE') {
             setNotes(currentNotes => currentNotes.map(note => note.id === payload.new.id ? payload.new : note));
           } else if (payload.eventType === 'DELETE') {
@@ -70,6 +72,8 @@ const NotesDashboard: React.FC<NotesDashboardProps> = ({ session }) => {
     } else {
       setNewNoteTitle('');
       setNewNoteContent('');
+      // Manually refetch notes to ensure UI is updated, even if real-time fails.
+      await fetchNotes(); 
     }
   };
   
@@ -86,12 +90,19 @@ const NotesDashboard: React.FC<NotesDashboardProps> = ({ session }) => {
           setError(error.message);
       } else {
           setEditingNote(null);
+          // Manually refetch notes to ensure UI is updated.
+          await fetchNotes();
       }
   };
 
   const handleDeleteNote = async (id: number) => {
     const { error } = await supabase.from('notes').delete().eq('id', id);
-    if (error) setError(error.message);
+    if (error) {
+        setError(error.message);
+    } else {
+        // Manually refetch notes to ensure UI is updated.
+        await fetchNotes();
+    }
   };
 
   const NoteForm = () => (
